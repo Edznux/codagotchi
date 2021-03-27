@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 while true; do
-    git pull &> /dev/null
+    date
+    git pull
     sleep 60
 done
