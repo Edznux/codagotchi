@@ -1,6 +1,9 @@
 # Krita auto save file
 *-autosave.kra
 
+# Game save (default name)
+save.json
+
 # binaries
 codagotchi
 *.wasm
