@@ -2,5 +2,5 @@
 
 while true; do
     git pull &> /dev/null
-    sleep 10
+    sleep 60
 done
