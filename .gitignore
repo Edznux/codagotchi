@@ -1,5 +1,6 @@
 # Krita auto save file
 *-autosave.kra
 
-# binary
+# binaries
 codagotchi
+*.wasm
