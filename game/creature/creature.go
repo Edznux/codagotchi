@@ -64,11 +64,9 @@ func (c *Creature) Update() {
 	c.LifeSpanCounter++
 
 	c.MoveTo(c.TargetX, c.TargetY)
+
 	c.PosX += c.Speed * c.VelocityX
 	c.PosY += c.Speed * c.VelocityY
-
-	// c.PosX = c.PosX + (c.VelocityX * c.PosX)
-	// c.PosY = c.PosY + (c.VelocityY * c.PosY)
 }
 
 func (c *Creature) Init() {

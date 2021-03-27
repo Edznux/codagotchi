@@ -6,6 +6,7 @@ import (
 	_ "image/png"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/DataDog/datadog-go/statsd"
@@ -35,13 +36,11 @@ type Game struct {
 // Update is called every tick (1/60 [s] by default).
 func (g *Game) Update() error {
 
-	// every 10 seconds
 	if g.World.Tick%600 == 0 {
-		g.Statsd.Gauge("codagotchi.bob.lifespan", float64(g.Bob.LifeSpanCounter), metrics.Tags, 1)
-		g.Statsd.Gauge("codagotchi.bob.life", float64(g.Bob.Life), metrics.Tags, 1)
-		g.Statsd.Gauge("codagotchi.world.life", float64(g.World.Tick), append(metrics.Tags, "world:"+g.World.Name), 1)
+		metrics.Gauge("codagotchi.bob.lifespan", float64(g.Bob.LifeSpanCounter), metrics.Tags, 1)
+		metrics.Gauge("codagotchi.bob.life", float64(g.Bob.Life), metrics.Tags, 1)
+		metrics.Gauge("codagotchi.world.life", float64(g.World.Tick), append(metrics.Tags, "world:"+g.World.Name), 1)
 	}
-
 	// Every minute, save
 	if g.World.Tick%600 == 0 {
 		g.Save(g.SaveName)
@@ -84,6 +83,24 @@ func (g *Game) Save(filename string) {
 	defer file.Close()
 
 	file.WriteString(string(data))
+}
+
+func LoadRemote(url string) (*Game, error) {
+	var g Game
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatalf("Unable to get file: %v", err)
+	}
+	data, _ := ioutil.ReadAll(resp.Body)
+
+	err = json.Unmarshal(data, &g)
+	if err != nil {
+		fmt.Println("JSON Unmarshal error:", err)
+		return nil, err
+	}
+	g.SaveName = "save.json"
+
+	return &g, err
 }
 
 func Load(filename string) (*Game, error) {
@@ -136,12 +153,6 @@ func Create(filename string) (*Game, error) {
 }
 
 func Start(game *Game) {
-	statsd, err := statsd.New("127.0.0.1:8125")
-	if err != nil {
-		log.Println(err)
-		log.Println("Continuing anyway...")
-	}
-	game.Statsd = statsd
 
 	game.World.Init()
 	game.Bob.Init()
@@ -153,4 +164,24 @@ func Start(game *Game) {
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func LoadAndStart(saveFile string, g *Game) {
+	var err error
+
+	if _, err = os.Stat(saveFile); err == nil {
+		g, err = Load(saveFile)
+		if err != nil {
+			fmt.Println("Error in loading save file", err)
+			return
+		}
+	} else {
+		g, err = Create(saveFile)
+		if err != nil {
+			fmt.Println("Error in loading save file", err)
+			return
+		}
+	}
+
+	Start(g)
 }

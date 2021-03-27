@@ -7,23 +7,25 @@ import (
 )
 
 type World struct {
-	Height int
-	Width  int
-	Speed  int
-	Name   string
-	Seed   int
-	Tick   int64
+	Height  int
+	Width   int
+	Speed   int
+	Name    string
+	Seed    int64
+	randGen *rand.Rand
+	Tick    int64
 }
 
 func (w *World) Draw(screen *ebiten.Image) {
 }
 
 func (w *World) Init() {
+	w.randGen = rand.New(rand.NewSource(w.Seed))
 }
 
 func (w *World) GetRandomPosInBound() (float64, float64) {
-	posX := rand.Float64() * float64(w.Width)
-	posY := rand.Float64() * float64(w.Height)
+	posX := w.randGen.Float64() * float64(w.Width)
+	posY := w.randGen.Float64() * float64(w.Height)
 	return posX, posY
 }
 
