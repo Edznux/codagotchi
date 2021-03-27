@@ -1,18 +1,16 @@
 package game
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"image"
 	_ "image/png"
 	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/DataDog/datadog-go/statsd"
-	"github.com/edznux/codagotchi/game/assets"
 	"github.com/edznux/codagotchi/game/creature"
+	"github.com/edznux/codagotchi/game/gui"
 	"github.com/edznux/codagotchi/game/world"
 	"github.com/edznux/codagotchi/metrics"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -27,6 +25,8 @@ type Game struct {
 	Bob   *creature.Creature
 	World *world.World
 
+	GUI gui.GUI `json:"-"`
+
 	// Don't save the Statsd client in the JSON of the save
 	Statsd *statsd.Client `json:"-"`
 }
@@ -34,17 +34,25 @@ type Game struct {
 // Update proceeds the game state.
 // Update is called every tick (1/60 [s] by default).
 func (g *Game) Update() error {
-	g.Bob.LifeSpanCounter++
-	g.World.Tick++
+
 	// every 10 seconds
 	if g.World.Tick%600 == 0 {
 		g.Statsd.Gauge("codagotchi.bob.lifespan", float64(g.Bob.LifeSpanCounter), metrics.Tags, 1)
 		g.Statsd.Gauge("codagotchi.bob.life", float64(g.Bob.Life), metrics.Tags, 1)
 		g.Statsd.Gauge("codagotchi.world.life", float64(g.World.Tick), append(metrics.Tags, "world:"+g.World.Name), 1)
 	}
+
+	// Every minute, save
 	if g.World.Tick%600 == 0 {
 		g.Save(g.SaveName)
 	}
+
+	if g.World.Tick%100 == 0 {
+		g.Bob.TargetX, g.Bob.TargetY = g.World.GetRandomPosInBound()
+	}
+
+	g.Bob.Update()
+	g.World.Update()
 
 	return nil
 }
@@ -54,6 +62,7 @@ func (g *Game) Update() error {
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.World.Draw(screen)
 	g.Bob.Draw(screen)
+	g.GUI.Draw(screen)
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
@@ -114,6 +123,7 @@ func Create(filename string) (*Game, error) {
 		LifeSpanCounter: 0,
 		PosX:            float64(world.Width / 2),
 		PosY:            float64(world.Height / 2),
+		Speed:           1,
 		VelocityX:       0,
 		VelocityY:       0,
 	}
@@ -133,14 +143,8 @@ func Start(game *Game) {
 	}
 	game.Statsd = statsd
 
-	// Assets loading done in the Start function and not in the Create or Load because
-	// it's not saved in the save.json file.
-	petPng, _, err := image.Decode(bytes.NewReader(assets.PetV1_png))
-	if err != nil {
-		log.Fatal(err)
-	}
-	bobImg := ebiten.NewImageFromImage(petPng)
-	game.Bob.Image = bobImg
+	game.World.Init()
+	game.Bob.Init()
 
 	ebiten.SetWindowSize(game.World.Width, game.World.Height)
 	ebiten.SetWindowTitle(game.World.Name)
