@@ -41,7 +41,6 @@ func (g *Game) Update() error {
 		metrics.Gauge("codagotchi.bob.life", float64(g.Bob.Life), metrics.Tags, 1)
 		metrics.Gauge("codagotchi.world.tick", float64(g.World.Tick), append(metrics.Tags, "world:"+g.World.Name), 1)
 	}
-	// Every minute, save
 	if g.World.Tick%60 == 0 {
 		g.Save(g.SaveName)
 	}
@@ -71,6 +70,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func (g *Game) Save(filename string) {
+	log.Println("Saving map!")
 	data, err := json.Marshal(g)
 	if err != nil {
 		fmt.Println("error:", err)
@@ -171,15 +171,15 @@ func LoadOrCreate(saveFile string) (*Game, error) {
 	var g *Game
 
 	_, err := os.Stat(saveFile)
-	if os.IsExist(err) {
-		log.Println("Trying to load file")
+	if err == nil {
+		log.Println("Trying to load file", saveFile)
 		g, err = Load(saveFile)
 		if err != nil {
 			log.Println("Error in loading save file", err)
 			return nil, err
 		}
 	} else {
-		log.Println("Trying to create file")
+		log.Println("Trying to create file", saveFile)
 		g, err = Create(saveFile)
 		if err != nil {
 			log.Println("Error in creating save file", err)

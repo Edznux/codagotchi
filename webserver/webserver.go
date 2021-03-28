@@ -64,5 +64,7 @@ func (web *WebServer) Start(saveFile string) {
 	http.HandleFunc("/save.json", web.HandleSave)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./webserver/static/"))))
 
-	http.ListenAndServe(":8080", nil)
+	go http.ListenAndServe(":8080", nil)
+
+	web.game.Start()
 }
