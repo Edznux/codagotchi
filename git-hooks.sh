@@ -5,7 +5,7 @@ docker build -t codagotchi:latest .
 docker stop codagotchi
 docker rm -f codagotchi
 docker run -d \
--p 8080:8080 \
+--net host \
 -v $(pwd)/save.json:/app/save.json \
 --name codagotchi \
 codagotchi:latest

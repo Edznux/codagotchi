@@ -39,10 +39,10 @@ func (g *Game) Update() error {
 	if g.World.Tick%600 == 0 {
 		metrics.Gauge("codagotchi.bob.lifespan", float64(g.Bob.LifeSpanCounter), metrics.Tags, 1)
 		metrics.Gauge("codagotchi.bob.life", float64(g.Bob.Life), metrics.Tags, 1)
-		metrics.Gauge("codagotchi.world.life", float64(g.World.Tick), append(metrics.Tags, "world:"+g.World.Name), 1)
+		metrics.Gauge("codagotchi.world.tick", float64(g.World.Tick), append(metrics.Tags, "world:"+g.World.Name), 1)
 	}
 	// Every minute, save
-	if g.World.Tick%600 == 0 {
+	if g.World.Tick%60 == 0 {
 		g.Save(g.SaveName)
 	}
 
