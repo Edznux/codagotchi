@@ -89,7 +89,7 @@ func LoadRemote(url string) (*Game, error) {
 	var g Game
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Unable to get file: %v", err)
+		log.Fatalf("Unable to get remote file: %v", err)
 	}
 	data, _ := ioutil.ReadAll(resp.Body)
 
@@ -109,7 +109,8 @@ func Load(filename string) (*Game, error) {
 
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Fatalf("unable to read file: %v", err)
+		log.Printf("Unable to read file: %v", err)
+		return nil, err
 	}
 
 	err = json.Unmarshal(data, &g)
@@ -123,7 +124,7 @@ func Load(filename string) (*Game, error) {
 }
 
 func Create(filename string) (*Game, error) {
-	game := &Game{}
+	game := Game{}
 
 	world := world.World{
 		Height: 720,
@@ -148,11 +149,11 @@ func Create(filename string) (*Game, error) {
 	game.World = &world
 	game.Bob = &bob
 	game.SaveName = filename
-
-	return game, nil
+	game.Save(game.SaveName)
+	return &game, nil
 }
 
-func Start(game *Game) {
+func (game *Game) Start() {
 
 	game.World.Init()
 	game.Bob.Init()
@@ -166,22 +167,24 @@ func Start(game *Game) {
 	}
 }
 
-func LoadAndStart(saveFile string, g *Game) {
-	var err error
+func LoadOrCreate(saveFile string) (*Game, error) {
+	var g *Game
 
-	if _, err = os.Stat(saveFile); err == nil {
+	_, err := os.Stat(saveFile)
+	if os.IsExist(err) {
+		log.Println("Trying to load file")
 		g, err = Load(saveFile)
 		if err != nil {
-			fmt.Println("Error in loading save file", err)
-			return
+			log.Println("Error in loading save file", err)
+			return nil, err
 		}
 	} else {
+		log.Println("Trying to create file")
 		g, err = Create(saveFile)
 		if err != nil {
-			fmt.Println("Error in loading save file", err)
-			return
+			log.Println("Error in creating save file", err)
+			return nil, err
 		}
 	}
-
-	Start(g)
+	return g, nil
 }

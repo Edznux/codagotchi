@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/edznux/codagotchi/game"
 	"github.com/edznux/codagotchi/webserver"
 	"github.com/spf13/cobra"
@@ -11,8 +13,11 @@ var rootCmd = &cobra.Command{
 	Use:   "codagotchi",
 	Short: "A mini coding based game",
 	Run: func(cmd *cobra.Command, args []string) {
-		g := game.Game{}
-		game.LoadAndStart(saveFile, &g)
+		g, err := game.LoadOrCreate(saveFile)
+		if err != nil {
+			log.Printf("Error while creating game: %+v\n", err)
+		}
+		g.Start()
 	},
 }
 var webCmd = &cobra.Command{

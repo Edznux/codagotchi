@@ -53,7 +53,7 @@ func (web *WebServer) HandleSave(w http.ResponseWriter, r *http.Request) {
 
 func (web *WebServer) Start(saveFile string) {
 	web.saveFile = saveFile
-	g, err := game.Load(web.saveFile)
+	g, err := game.LoadOrCreate(web.saveFile)
 	if err != nil {
 		fmt.Println("Error loading game:", err)
 		return
