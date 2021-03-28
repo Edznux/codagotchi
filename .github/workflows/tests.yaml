@@ -32,11 +32,11 @@ jobs:
 
       - name: go vet
         run: |
-          go vet -tags=example -v ./...
+          go vet -v ./...
 
       - name: go build
         run: |
-          go build -tags=example -v ./...
+          go build -v ./...
           env GOOS=js GOARCH=wasm go build .
 
       - name: go test
