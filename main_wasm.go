@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// This allows to fetch the save over http in the browser when compiled to WASM
-	g, err := game.LoadRemote("http://edznux.fr:8080/save.json")
+	g, err := game.LoadRemote("/save.json")
 	if err != nil {
 		fmt.Println("Couldn't load save ", err)
 	}
