@@ -21,7 +21,7 @@ type variables struct {
 }
 
 func (web *WebServer) Index(w http.ResponseWriter, r *http.Request) {
-	metrics.Count("codagotchi.web.page.index", 1, metrics.Tags, 1)
+	metrics.Count("codagotchi.web.page.hit", 1, append(metrics.Tags, "page:index"), 1)
 
 	template, err := template.New("Index").Parse(templates.IndexTmpl)
 	if err != nil {
@@ -36,7 +36,7 @@ func (web *WebServer) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (web *WebServer) HandleSave(w http.ResponseWriter, r *http.Request) {
-	metrics.Count("codagotchi.web.page.save", 1, metrics.Tags, 1)
+	metrics.Count("codagotchi.web.page.hit", 1, append(metrics.Tags, "page:save"), 1)
 	w.Header().Set("Content-Type", "application/json")
 
 	g, err := game.Load(web.saveFile)
