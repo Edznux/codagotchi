@@ -13,7 +13,7 @@ import (
 type Creature struct {
 	Name string
 
-	Life            int64
+	Life            float64
 	LifeSpanCounter int64 //increment every tick
 
 	PosX float64
@@ -60,13 +60,33 @@ func (c *Creature) MoveTo(toX, toY float64) {
 	}
 }
 
-func (c *Creature) Update() {
+func (c *Creature) isDead() bool {
+	if c.Life <= 0 {
+		return true
+	}
+	return false
+}
+func (c *Creature) Update(worldTick int64) {
+	if c.isDead() {
+		// Do not update the creature if it's dead.
+		return
+	}
+
 	c.LifeSpanCounter++
 
 	c.MoveTo(c.TargetX, c.TargetY)
 
 	c.PosX += c.Speed * c.VelocityX
 	c.PosY += c.Speed * c.VelocityY
+
+	// Every 10 sec loose 0.004 point of life.
+	// This should last for ~ 29 DAYS (IRL)
+	// 1000 - ((0.004/600)*60*60*60*24*29)
+	// = -2.240000000000009
+	if worldTick%600 == 0 {
+		c.Life -= 0.004
+	}
+
 }
 
 func (c *Creature) Init() {
@@ -79,6 +99,9 @@ func (c *Creature) Init() {
 }
 
 func (c *Creature) Draw(screen *ebiten.Image) {
+	if c.isDead() {
+		return
+	}
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(c.GetCenterPos())
 	screen.DrawImage(c.Image, op)
