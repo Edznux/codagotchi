@@ -7,4 +7,4 @@ RUN apt update && apt install -y libc6-dev libglu1-mesa-dev libgl1-mesa-dev libx
 COPY . .
 RUN ./build.sh
 EXPOSE 8080
-CMD ["codagotchi", "web"]
+CMD ["/app/codagotchi", "web"]
