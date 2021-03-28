@@ -2,7 +2,6 @@ package webserver
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -37,15 +36,15 @@ func (web *WebServer) HandleSave(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	g, err := game.Load(web.saveFile)
-	fmt.Println("Loading game:", web.saveFile)
+	log.Println("Loading game:", web.saveFile)
 	if err != nil {
-		fmt.Println("Error loading game:", err)
+		log.Println("Error loading game:", err)
 		w.Write([]byte{})
 	}
 
 	res, err := json.Marshal(g)
 	if err != nil {
-		fmt.Println("Error marshalling game save:", err)
+		log.Println("Error marshalling game save:", err)
 		w.Write([]byte{})
 	}
 	w.Write(res)
@@ -55,7 +54,7 @@ func (web *WebServer) Start(saveFile string) {
 	web.saveFile = saveFile
 	g, err := game.LoadOrCreate(web.saveFile)
 	if err != nil {
-		fmt.Println("Error loading game:", err)
+		log.Println("Error loading game:", err)
 		return
 	}
 	web.game = g

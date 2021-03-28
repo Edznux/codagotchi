@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/json"
-	"fmt"
 	_ "image/png"
 	"io/ioutil"
 	"log"
@@ -70,10 +69,9 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func (g *Game) Save(filename string) {
-	log.Println("Saving map!")
 	data, err := json.Marshal(g)
 	if err != nil {
-		fmt.Println("error:", err)
+		log.Println("error:", err)
 	}
 	file, err := os.Create(filename)
 
@@ -95,7 +93,7 @@ func LoadRemote(url string) (*Game, error) {
 
 	err = json.Unmarshal(data, &g)
 	if err != nil {
-		fmt.Println("JSON Unmarshal error:", err)
+		log.Println("JSON Unmarshal error:", err)
 		return nil, err
 	}
 	g.SaveName = "save.json"
@@ -115,7 +113,7 @@ func Load(filename string) (*Game, error) {
 
 	err = json.Unmarshal(data, &g)
 	if err != nil {
-		fmt.Println("JSON Unmarshal error:", err)
+		log.Println("JSON Unmarshal error:", err)
 		return nil, err
 	}
 	g.SaveName = filename
