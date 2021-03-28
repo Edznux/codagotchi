@@ -114,7 +114,7 @@ func Load(filename string) (*Game, error) {
 		return nil, err
 	}
 	// Keep an eye on the save size. Should not grow too much
-	metrics.Count("codagotchi.save.size", int64(len(data)), metrics.Tags, 1)
+	metrics.Gauge("codagotchi.save.size", float64(len(data)), metrics.Tags, 1)
 
 	err = json.Unmarshal(data, &g)
 	if err != nil {
