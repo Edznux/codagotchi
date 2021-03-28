@@ -35,11 +35,14 @@ type Game struct {
 // Update is called every tick (1/60 [s] by default).
 func (g *Game) Update() error {
 
+	// Gather metrics of the game every 10 sec
 	if g.World.Tick%600 == 0 {
 		metrics.Gauge("codagotchi.bob.lifespan", float64(g.Bob.LifeSpanCounter), metrics.Tags, 1)
 		metrics.Gauge("codagotchi.bob.life", float64(g.Bob.Life), metrics.Tags, 1)
 		metrics.Gauge("codagotchi.world.tick", float64(g.World.Tick), append(metrics.Tags, "world:"+g.World.Name), 1)
+		metrics.Gauge("codagotchi.world.tps", ebiten.CurrentTPS(), append(metrics.Tags, "world:"+g.World.Name), 1)
 	}
+
 	if g.World.Tick%60 == 0 {
 		g.Save(g.SaveName)
 	}
@@ -110,6 +113,8 @@ func Load(filename string) (*Game, error) {
 		log.Printf("Unable to read file: %v", err)
 		return nil, err
 	}
+	// Keep an eye on the save size. Should not grow too much
+	metrics.Gauge("codagotchi.save.size", float64(len(data)), metrics.Tags, 1)
 
 	err = json.Unmarshal(data, &g)
 	if err != nil {

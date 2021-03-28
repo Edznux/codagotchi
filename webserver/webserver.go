@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/edznux/codagotchi/game"
+	"github.com/edznux/codagotchi/metrics"
 	"github.com/edznux/codagotchi/webserver/templates"
 )
 
@@ -20,6 +21,8 @@ type variables struct {
 }
 
 func (web *WebServer) Index(w http.ResponseWriter, r *http.Request) {
+	metrics.Count("codagotchi.web.page.index", 1, metrics.Tags, 1)
+
 	template, err := template.New("Index").Parse(templates.IndexTmpl)
 	if err != nil {
 		log.Fatalf("template execution: %s", err)
@@ -33,6 +36,7 @@ func (web *WebServer) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (web *WebServer) HandleSave(w http.ResponseWriter, r *http.Request) {
+	metrics.Count("codagotchi.web.page.save", 1, metrics.Tags, 1)
 	w.Header().Set("Content-Type", "application/json")
 
 	g, err := game.Load(web.saveFile)
@@ -51,6 +55,7 @@ func (web *WebServer) HandleSave(w http.ResponseWriter, r *http.Request) {
 }
 
 func (web *WebServer) Start(saveFile string) {
+
 	web.saveFile = saveFile
 	g, err := game.LoadOrCreate(web.saveFile)
 	if err != nil {
@@ -63,6 +68,7 @@ func (web *WebServer) Start(saveFile string) {
 	http.HandleFunc("/save.json", web.HandleSave)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./webserver/static/"))))
 
+	metrics.Count("codagotchi.web.start", 1, metrics.Tags, 1)
 	go http.ListenAndServe(":8080", nil)
 
 	web.game.Start()
